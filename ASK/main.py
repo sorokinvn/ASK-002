@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import random
+import datetime
+import time
+import threading
 import tkinter as tk
+from time import sleep
 from tkinter import  messagebox
 from tkinter import*
 
@@ -141,6 +146,8 @@ class Gep():
         self.lb_ua_gep_value.config(text=self.value)
         if self.value <= self.u_min or self.value >= self.u_max:
             self.lb_ua_gep_value.config(bg='red')
+            if self.value == 0:
+                self.lb_ua_gep_value.config(bg=root.cget('bg'))
         else:
             self.lb_ua_gep_value.config(bg='spring green')
 
@@ -150,6 +157,8 @@ class Gep():
         self.lb_ub_gep_value.config(text=self.value)
         if self.value <= self.u_min or self.value >= self.u_max:
             self.lb_ub_gep_value.config(bg='red')
+            if self.value == 0:
+                self.lb_ub_gep_value.config(bg=root.cget('bg'))
         else:
             self.lb_ub_gep_value.config(bg='spring green')
 
@@ -159,6 +168,8 @@ class Gep():
         self.lb_uc_gep_value.config(text=self.value)
         if self.value <= self.u_min or self.value >= self.u_max:
             self.lb_uc_gep_value.config(bg='red')
+            if self.value == 0:
+                self.lb_uc_gep_value.config(bg=root.cget('bg'))
         else:
             self.lb_uc_gep_value.config(bg='spring green')
 
@@ -168,6 +179,8 @@ class Gep():
         self.lb_f_gep_value.config(text=self.value)
         if self.value <= self.f_min or self.value >= self.f_max:
             self.lb_f_gep_value.config(bg='red')
+            if self.value == 0:
+                self.lb_f_gep_value.config(bg=root.cget('bg'))
         else:
             self.lb_f_gep_value.config(bg='spring green')
 
@@ -192,9 +205,9 @@ class Gep():
                 self.lb_key_gep_value.config(text='РУЧНОЙ')
         if self.gep_type == 100 or self.gep_type == 33:
             if self.value == 0:
-                self.lb_key_gep_value.config(text='РУЧНОЙ', bg='coral')
+                self.lb_key_gep_value.config(text='РУЧНОЙ')
             if self.value == 16:
-                self.lb_key_gep_value.config(text='АВТО', bg='spring green')
+                self.lb_key_gep_value.config(text='АВТО')
             if self.value == 32:
                 self.lb_key_gep_value.config(text='ПРОВЕРКА', bg='coral')
             if self.value == 64:
@@ -233,6 +246,69 @@ class Gep():
         else:
             self.lb_f_vru_value.config(bg='spring green')
 
+def potok (my_func):
+    def wapper(*args, **kwargs):
+        my_thread = threading.Thread(target = my_func, args = args, kwargs = kwargs, daemon = True)
+        my_thread.start()
+    return wapper
+
+@potok
+def gtime():
+    try:
+        while True:
+            lb_clock.config(text = datetime.datetime.now().strftime('%d-%m-%Y\n%H:%M:%S'))
+            time.sleep(1)
+    except:
+        pass
+
+@potok
+def gep_100_get():
+    try:
+        while True:
+            gep_100.set_ua_gep(random.randint(206, 254))
+            gep_100.set_ub_gep(random.randint(206, 254))
+            gep_100.set_uc_gep(random.randint(206, 254))
+            gep_100.set_f_gep(random.randint(496, 504)/10)
+            gep_100.set_ua_vru(random.randint(206, 254))
+            gep_100.set_ub_vru(random.randint(206, 254))
+            gep_100.set_uc_vru(random.randint(206, 254))
+            gep_100.set_f_vru(random.randint(496, 504) / 10)
+            time.sleep(.3)
+    except:
+        pass
+
+@potok
+def gep_110_get():
+    try:
+        while True:
+            gep_110.set_ua_gep(random.randint(206, 254))
+            gep_110.set_ub_gep(random.randint(206, 254))
+            gep_110.set_uc_gep(random.randint(206, 254))
+            gep_110.set_f_gep(random.randint(496, 504) / 10)
+            gep_110.set_ua_vru(random.randint(206, 254))
+            gep_110.set_ub_vru(random.randint(206, 254))
+            gep_110.set_uc_vru(random.randint(206, 254))
+            gep_110.set_f_vru(random.randint(496, 504) / 10)
+            time.sleep(.3)
+    except:
+        pass
+
+@potok
+def gep_33_get():
+    try:
+        while True:
+            gep_33.set_ua_gep(random.randint(206, 254))
+            gep_33.set_ub_gep(random.randint(206, 254))
+            gep_33.set_uc_gep(random.randint(206, 254))
+            gep_33.set_f_gep(random.randint(496, 504) / 10)
+            gep_33.set_ua_vru(random.randint(206, 254))
+            gep_33.set_ub_vru(random.randint(206, 254))
+            gep_33.set_uc_vru(random.randint(206, 254))
+            gep_33.set_f_vru(random.randint(496, 504) / 10)
+            time.sleep(.3)
+    except:
+        pass
+
 
 # создаем главное окно программы
 root = tk.Tk()
@@ -242,9 +318,18 @@ if root.winfo_screenwidth() != 1920 or root.winfo_screenheight() != 1080:
     messagebox.showerror(message = 'Разрешение экрана не равно: 1920 x 1080' , title="Ошибка")
     root.destroy()
 else:
-    # создаем фрейм главного окна
+    # создаем основной фрейм главного окна
     frame_root = Frame(root, width = 1910, height = 1070, relief = GROOVE, borderwidth = 2)
     frame_root.place(x = 5, y = 5)
+
+    # создаем правый фрейм главного окна
+    frame_button = Frame(frame_root, width=200, height=1055, relief=GROOVE, borderwidth=2)
+    frame_button.place(x=1700, y=5)
+
+    # рисуем часы
+    lb_clock = Label(frame_button, font="Arial 18 bold", width=12, height=3, bg = 'dim gray',
+                     fg = 'spring green', relief=RIDGE, borderwidth=2)
+    lb_clock.place(x=5, y=5)
 
     # загружаем картинку GEP
     image_gep = PhotoImage(file = 'image/gep.png')
@@ -256,18 +341,20 @@ else:
     gep_33 = Gep(name = 'GEP 33', x=5, y=435)
     gep_33.creat()
 
-    gep_100.creat()
     gep_100.set_status(1)
-    gep_100.set_ua_gep(234)
-    gep_100.set_ub_gep(235)
-    gep_100.set_uc_gep(236)
-    gep_100.set_f_gep(50)
-    gep_100.set_key_pos(4, 110)
-    gep_100.set_sw_pos(3)
-    gep_100.set_f_vru(50)
-    gep_100.set_ua_vru(242)
-    gep_100.set_ub_vru(253)
-    gep_100.set_uc_vru(244)
+    gep_100.set_key_pos(16, 100)
+    gep_100.set_sw_pos(2)
+    gep_100_get()
 
-    #root.protocol('WM_DELETE_WINDOW', messagebox.showinfo(message = 'Выходим' , title="Выход из приложения"))
+    gep_110.set_status(1)
+    gep_110.set_key_pos(4, 110)
+    gep_110.set_sw_pos(3)
+    gep_110_get()
+
+    gep_33.set_status(0)
+    gep_33.set_key_pos(64, 100)
+    gep_33.set_sw_pos(2)
+    gep_33_get()
+
+    gtime()
 root.mainloop()
