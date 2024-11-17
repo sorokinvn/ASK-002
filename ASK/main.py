@@ -9,6 +9,7 @@ from time import sleep
 from tkinter import  messagebox
 from tkinter import*
 
+
 # объявляем класс GEP
 class Gep():
     def __init__(self, name, x, y):
@@ -21,16 +22,42 @@ class Gep():
         self.u_max = 253
         self.f_min = 49.6
         self.f_max = 50.4
+        self.service = False
 
     def creat(self):
+        def service_1():
+            if self.service == False:
+                self.service = True
+                lb_image_gep.config(bg='red')
+                self.lb_gep_service = Label(lb_image_gep, width=20, height=3, text='ТЕХНИЧЕСКОЕ\nОБСЛУЖИВАНИЕ',
+                                            font="Arial 10 bold", bg='yellow', relief=RIDGE, borderwidth=2)
+                self.lb_gep_service.place(x=50, y=50)
+            else:
+                messagebox.showinfo(message=self.name + ' в настоящий момент на ТО!')
+
+        def service_0():
+            if self.service == True:
+                self.service = False
+                lb_image_gep.config(bg='green')
+                self.lb_gep_service.destroy()
+            else:
+                messagebox.showinfo(message=self.name + ' ТО не проводится!')
+
+        def click(event):
+            self.service_menu.post(event.x_root + 5, event.y_root + 5)
 
         # создаем фрейм gep
         self.frame_gep = Frame(frame_root, width=540, height=200, relief=GROOVE, borderwidth=2)
         self.frame_gep.place(x=self.x, y=self.y)
 
         # рисуем картинку gep
-        lb_image_gep = Label(self.frame_gep, image=image_gep, relief=RIDGE, borderwidth=2)
+        lb_image_gep = Label(self.frame_gep, image=image_gep, bg='green', relief=RIDGE, borderwidth=3)
         lb_image_gep.place(x=5, y=5)
+        lb_image_gep.bind('<Button-3>', click)
+        self.service_menu = Menu(lb_image_gep, tearoff = False)
+        self.service_menu.add_command(label='Поставить на ТО ' + self.name, command=service_1)
+        self.service_menu.add_command(label='Снять с ТО ' + self.name, command=service_0)
+
 
         # рисуем имя gep
         lb_name_gep = Label(self.frame_gep, width=9, text=self.name, font="Arial 12 bold",
@@ -297,10 +324,10 @@ def gep_110_get():
 def gep_33_get():
     try:
         while True:
-            gep_33.set_ua_gep(random.randint(206, 254))
-            gep_33.set_ub_gep(random.randint(206, 254))
-            gep_33.set_uc_gep(random.randint(206, 254))
-            gep_33.set_f_gep(random.randint(496, 504) / 10)
+            gep_33.set_ua_gep(0)
+            gep_33.set_ub_gep(0)
+            gep_33.set_uc_gep(0)
+            gep_33.set_f_gep(0)
             gep_33.set_ua_vru(random.randint(206, 254))
             gep_33.set_ub_vru(random.randint(206, 254))
             gep_33.set_uc_vru(random.randint(206, 254))
@@ -352,7 +379,7 @@ else:
     gep_110_get()
 
     gep_33.set_status(0)
-    gep_33.set_key_pos(64, 100)
+    gep_33.set_key_pos(64, 33)
     gep_33.set_sw_pos(2)
     gep_33_get()
 
