@@ -5,10 +5,10 @@ import datetime
 import time
 import threading
 import tkinter as tk
-from time import sleep
 from tkinter import  messagebox
 from tkinter import*
 
+alarm = False
 
 # объявляем класс GEP
 class Gep():
@@ -23,13 +23,17 @@ class Gep():
         self.f_min = 49.6
         self.f_max = 50.4
         self.service = False
+        self.alarm_ua = False
+        self.alarm_ub = False
+        self.alarm_uc = False
+        self.alarm_f = False
 
     def creat(self):
         def service_1():
             if self.service == False:
                 self.service = True
                 lb_image_gep.config(bg='red')
-                self.lb_gep_service = Label(lb_image_gep, width=20, height=3, text='ТЕХНИЧЕСКОЕ\nОБСЛУЖИВАНИЕ',
+                self.lb_gep_service = Label(lb_image_gep, width=28, height=3, text='ТЕХНИЧЕСКОЕ\nОБСЛУЖИВАНИЕ',
                                             font="Arial 10 bold", bg='yellow', relief=RIDGE, borderwidth=2)
                 self.lb_gep_service.place(x=50, y=50)
             else:
@@ -171,12 +175,21 @@ class Gep():
     def set_ua_gep(self, value):
         self.value = value
         self.lb_ua_gep_value.config(text=self.value)
-        if self.value <= self.u_min or self.value >= self.u_max:
-            self.lb_ua_gep_value.config(bg='red')
-            if self.value == 0:
-                self.lb_ua_gep_value.config(bg=root.cget('bg'))
+        if self.service == False:
+            if self.value <= self.u_min or self.value >= self.u_max:
+                if self.value == 0:
+                    self.lb_ua_gep_value.config(bg=root.cget('bg'))
+                    self.alarm_ua = False
+                else:
+                    self.lb_ua_gep_value.config(bg='red')
+                    self.alarm_ua = True
+            else:
+                self.lb_ua_gep_value.config(bg='spring green')
+                self.alarm_ua = False
         else:
-            self.lb_ua_gep_value.config(bg='spring green')
+            self.lb_ua_gep_value.config(bg=root.cget('bg'))
+            self.alarm_ua = False
+
 
     # задаем значение ub gep
     def set_ub_gep(self, value):
@@ -184,8 +197,10 @@ class Gep():
         self.lb_ub_gep_value.config(text=self.value)
         if self.value <= self.u_min or self.value >= self.u_max:
             self.lb_ub_gep_value.config(bg='red')
-            if self.value == 0:
+            if self.value == 0 and self.service == True:
                 self.lb_ub_gep_value.config(bg=root.cget('bg'))
+            if self.value == 0 and self.service == False:
+                self.lb_ub_gep_value.config(bg='red')
         else:
             self.lb_ub_gep_value.config(bg='spring green')
 
@@ -195,8 +210,10 @@ class Gep():
         self.lb_uc_gep_value.config(text=self.value)
         if self.value <= self.u_min or self.value >= self.u_max:
             self.lb_uc_gep_value.config(bg='red')
-            if self.value == 0:
+            if self.value == 0 and self.service == True:
                 self.lb_uc_gep_value.config(bg=root.cget('bg'))
+            if self.value == 0 and self.service == False:
+                self.lb_uc_gep_value.config(bg='red')
         else:
             self.lb_uc_gep_value.config(bg='spring green')
 
@@ -292,13 +309,13 @@ def gtime():
 def gep_100_get():
     try:
         while True:
-            gep_100.set_ua_gep(random.randint(206, 254))
-            gep_100.set_ub_gep(random.randint(206, 254))
-            gep_100.set_uc_gep(random.randint(206, 254))
+            gep_100.set_ua_gep(random.randint(20600, 25400)/100)
+            gep_100.set_ub_gep(random.randint(20600, 25400)/100)
+            gep_100.set_uc_gep(random.randint(20600, 25400)/100)
             gep_100.set_f_gep(random.randint(496, 504)/10)
-            gep_100.set_ua_vru(random.randint(206, 254))
-            gep_100.set_ub_vru(random.randint(206, 254))
-            gep_100.set_uc_vru(random.randint(206, 254))
+            gep_100.set_ua_vru(random.randint(20600, 25400)/100)
+            gep_100.set_ub_vru(random.randint(20600, 25400)/100)
+            gep_100.set_uc_vru(random.randint(20600, 25400)/100)
             gep_100.set_f_vru(random.randint(496, 504) / 10)
             time.sleep(.3)
     except:
@@ -308,13 +325,13 @@ def gep_100_get():
 def gep_110_get():
     try:
         while True:
-            gep_110.set_ua_gep(random.randint(206, 254))
-            gep_110.set_ub_gep(random.randint(206, 254))
-            gep_110.set_uc_gep(random.randint(206, 254))
+            gep_110.set_ua_gep(random.randint(20600, 25400)/100)
+            gep_110.set_ub_gep(random.randint(20600, 25400)/100)
+            gep_110.set_uc_gep(random.randint(20600, 25400)/100)
             gep_110.set_f_gep(random.randint(496, 504) / 10)
-            gep_110.set_ua_vru(random.randint(206, 254))
-            gep_110.set_ub_vru(random.randint(206, 254))
-            gep_110.set_uc_vru(random.randint(206, 254))
+            gep_110.set_ua_vru(random.randint(20600, 25400)/100)
+            gep_110.set_ub_vru(random.randint(20600, 25400)/100)
+            gep_110.set_uc_vru(random.randint(20600, 25400)/100)
             gep_110.set_f_vru(random.randint(496, 504) / 10)
             time.sleep(.3)
     except:
@@ -328,23 +345,24 @@ def gep_33_get():
             gep_33.set_ub_gep(0)
             gep_33.set_uc_gep(0)
             gep_33.set_f_gep(0)
-            gep_33.set_ua_vru(random.randint(206, 254))
-            gep_33.set_ub_vru(random.randint(206, 254))
-            gep_33.set_uc_vru(random.randint(206, 254))
+            gep_33.set_ua_vru(random.randint(20600, 25400)/100)
+            gep_33.set_ub_vru(random.randint(20600, 25400)/100)
+            gep_33.set_uc_vru(random.randint(20600, 25400)/100)
             gep_33.set_f_vru(random.randint(496, 504) / 10)
             time.sleep(.3)
     except:
         pass
 
-
 # создаем главное окно программы
 root = tk.Tk()
 root.attributes('-fullscreen', True)
+
 # порверяем текущее разрешение экрана, если не 1920 х 1080 - не запускаемся
 if root.winfo_screenwidth() != 1920 or root.winfo_screenheight() != 1080:
     messagebox.showerror(message = 'Разрешение экрана не равно: 1920 x 1080' , title="Ошибка")
     root.destroy()
 else:
+
     # создаем основной фрейм главного окна
     frame_root = Frame(root, width = 1910, height = 1070, relief = GROOVE, borderwidth = 2)
     frame_root.place(x = 5, y = 5)
@@ -357,6 +375,12 @@ else:
     lb_clock = Label(frame_button, font="Arial 18 bold", width=12, height=3, bg = 'dim gray',
                      fg = 'spring green', relief=RIDGE, borderwidth=2)
     lb_clock.place(x=5, y=5)
+
+    # рисуем индикатор аларма
+    image_alarm_0 = PhotoImage(file='image/green_light.png')
+    image_alarm_1 = PhotoImage(file='image/red_light.png')
+    lb_alarm = Label(frame_button)
+    lb_alarm.place(x=5, y=500)
 
     # загружаем картинку GEP
     image_gep = PhotoImage(file = 'image/gep.png')
