@@ -5,10 +5,45 @@ import datetime
 import time
 import threading
 import tkinter as tk
+import tkinter.ttk as ttk
 from tkinter import  messagebox
 from tkinter import*
 
 alarm = False
+
+class Event():
+    def __init__(self, x, y):
+        # координаты размещения виджета
+        self.x = x
+        self.y = y
+
+    def create(self):
+        columns = ("date", "time", "object", "event")
+        self.tree = ttk.Treeview(frame_root, columns = columns, show = "headings", height = 10)
+        self.tree.place(x = self.x, y= self.y)
+
+        self.tree.heading("date", text="Дата", anchor = CENTER)
+        self.tree.heading("time", text = "ВРЕМЯ", anchor = CENTER)
+        self.tree.heading("object", text = "ОБЪЕКТ", anchor = CENTER)
+        self.tree.heading("event", text = "СОБЫТИЕ", anchor = CENTER)
+
+        self.tree.column("#1", stretch = NO, width = 100, anchor = CENTER)
+        self.tree.column("#2", stretch = NO, width = 100, anchor = CENTER)
+        self.tree.column("#3", stretch = NO, width = 100, anchor = CENTER)
+        self.tree.column("#4", stretch = NO, width = 300)
+
+        self.tree.tag_configure('service', background = 'yellow')
+        self.tree.tag_configure('alarm', background='coral')
+        self.tree.tag_configure('inform', background='white')
+
+
+    def add(self, event, *tag):
+        if tag:
+            tag = tag
+        else:
+            tag = 'inform'
+        value = [datetime.date.today(), datetime.datetime.now().time().strftime('%H:%M:%S'), event[0], event[1]]
+        self.tree.insert("", END, values = value, tags = (tag))
 
 # объявляем класс GEP
 class Gep():
@@ -17,11 +52,12 @@ class Gep():
         # координаты размещения виджета
         self.x = x
         self.y = y
-        # уставки допустимых значений контролируемых параметров
+        # уставки допустимых значений контролируемых параметров (по ГОСТ 32144-2013: 10% для напряжения и 0,4Гц для частоты сети)
         self.u_min = 207
         self.u_max = 253
         self.f_min = 49.6
         self.f_max = 50.4
+        # флаги алармов
         self.service = False
         self.alarm_ua = False
         self.alarm_ub = False
@@ -32,18 +68,20 @@ class Gep():
         def service_1():
             if self.service == False:
                 self.service = True
-                lb_image_gep.config(bg='red')
+                lb_image_gep.config(bg=root.cget('bg'))
                 self.lb_gep_service = Label(lb_image_gep, width=28, height=3, text='ТЕХНИЧЕСКОЕ\nОБСЛУЖИВАНИЕ',
                                             font="Arial 10 bold", bg='yellow', relief=RIDGE, borderwidth=2)
                 self.lb_gep_service.place(x=50, y=50)
+                event_alarm.add([self.name, 'Поставлен на ТО'], 'service')
             else:
-                messagebox.showinfo(message=self.name + ' в настоящий момент на ТО!')
+                messagebox.showinfo(message=self.name + ' в настоящий момент на ТО')
 
         def service_0():
             if self.service == True:
                 self.service = False
                 lb_image_gep.config(bg='green')
                 self.lb_gep_service.destroy()
+                event_alarm.add([self.name, 'Снят с ТО'], 'service')
             else:
                 messagebox.showinfo(message=self.name + ' ТО не проводится!')
 
@@ -173,6 +211,7 @@ class Gep():
 
     # задаем значение ua gep
     def set_ua_gep(self, value):
+        self.alarm_ua = False
         self.value = value
         self.lb_ua_gep_value.config(text=self.value)
         if self.service == False:
@@ -189,44 +228,75 @@ class Gep():
         else:
             self.lb_ua_gep_value.config(bg=root.cget('bg'))
             self.alarm_ua = False
-
+        # добавляем запись об аварии в журнал
+        if self.alarm_ua == True:
+            event_alarm.add([self.name , 'Выход Ua за границы уставок: Ua = ' + str(self.value)], 'alarm')
 
     # задаем значение ub gep
     def set_ub_gep(self, value):
         self.value = value
         self.lb_ub_gep_value.config(text=self.value)
-        if self.value <= self.u_min or self.value >= self.u_max:
-            self.lb_ub_gep_value.config(bg='red')
-            if self.value == 0 and self.service == True:
-                self.lb_ub_gep_value.config(bg=root.cget('bg'))
-            if self.value == 0 and self.service == False:
-                self.lb_ub_gep_value.config(bg='red')
+        if self.service == False:
+            if self.value <= self.u_min or self.value >= self.u_max:
+                if self.value == 0:
+                    self.lb_ub_gep_value.config(bg=root.cget('bg'))
+                    self.alarm_ub = False
+                else:
+                    self.lb_ub_gep_value.config(bg='red')
+                    self.alarm_ub = True
+            else:
+                self.lb_ub_gep_value.config(bg='spring green')
+                self.alarm_ub = False
         else:
-            self.lb_ub_gep_value.config(bg='spring green')
+            self.lb_ub_gep_value.config(bg=root.cget('bg'))
+            self.alarm_ub = False
+        # добавляем запись об аварии в журнал
+        if self.alarm_ub == True:
+            event_alarm.add([self.name , 'Выход Ua за границы уставок: Ub = ' + str(self.value)], 'alarm')
 
     # задаем значение uc gep
     def set_uc_gep(self, value):
         self.value = value
         self.lb_uc_gep_value.config(text=self.value)
-        if self.value <= self.u_min or self.value >= self.u_max:
-            self.lb_uc_gep_value.config(bg='red')
-            if self.value == 0 and self.service == True:
-                self.lb_uc_gep_value.config(bg=root.cget('bg'))
-            if self.value == 0 and self.service == False:
-                self.lb_uc_gep_value.config(bg='red')
+        if self.service == False:
+            if self.value <= self.u_min or self.value >= self.u_max:
+                if self.value == 0:
+                    self.lb_uc_gep_value.config(bg=root.cget('bg'))
+                    self.alarm_uc = False
+                else:
+                    self.lb_uc_gep_value.config(bg='red')
+                    self.alarm_uc = True
+            else:
+                self.lb_uc_gep_value.config(bg='spring green')
+                self.alarm_uc = False
         else:
-            self.lb_uc_gep_value.config(bg='spring green')
+            self.lb_uc_gep_value.config(bg=root.cget('bg'))
+            self.alarm_uc = False
+        # добавляем запись об аварии в журнал
+        if self.alarm_uc == True:
+            event_alarm.add([self.name , 'Выход Ua за границы уставок: Uc = ' + str(self.value)], 'alarm')
 
     # задаем значение f gep
     def set_f_gep(self, value):
         self.value = value
         self.lb_f_gep_value.config(text=self.value)
-        if self.value <= self.f_min or self.value >= self.f_max:
-            self.lb_f_gep_value.config(bg='red')
-            if self.value == 0:
-                self.lb_f_gep_value.config(bg=root.cget('bg'))
+        if self.service == False:
+            if self.value <= self.f_min or self.value >= self.f_max:
+                if self.value == 0:
+                    self.lb_f_gep_value.config(bg=root.cget('bg'))
+                    self.alarm_f = False
+                else:
+                    self.lb_f_gep_value.config(bg='red')
+                    self.alarm_f = True
+            else:
+                self.lb_f_gep_value.config(bg='spring green')
+                self.alarm_f = False
         else:
-            self.lb_f_gep_value.config(bg='spring green')
+            self.lb_f_gep_value.config(bg=root.cget('bg'))
+            self.alarm_f = False
+        # добавляем запись об аварии в журнал
+        if self.alarm_f == True:
+            event_alarm.add([self.name , 'Выход Ua за границы уставок: f = ' + str(self.value)], 'alarm')
 
     # задаем положение ati
     def set_sw_pos(self, value):
@@ -309,14 +379,14 @@ def gtime():
 def gep_100_get():
     try:
         while True:
-            gep_100.set_ua_gep(random.randint(20600, 25400)/100)
-            gep_100.set_ub_gep(random.randint(20600, 25400)/100)
-            gep_100.set_uc_gep(random.randint(20600, 25400)/100)
-            gep_100.set_f_gep(random.randint(496, 504)/10)
-            gep_100.set_ua_vru(random.randint(20600, 25400)/100)
-            gep_100.set_ub_vru(random.randint(20600, 25400)/100)
-            gep_100.set_uc_vru(random.randint(20600, 25400)/100)
-            gep_100.set_f_vru(random.randint(496, 504) / 10)
+            gep_100.set_ua_gep(random.randint(20699, 25310)/100)
+            gep_100.set_ub_gep(random.randint(20699, 25310)/100)
+            gep_100.set_uc_gep(random.randint(20699, 25310)/100)
+            gep_100.set_f_gep(random.randint(4960, 5040)/100)
+            gep_100.set_ua_vru(random.randint(20699, 25310)/100)
+            gep_100.set_ub_vru(random.randint(20699, 25310)/100)
+            gep_100.set_uc_vru(random.randint(20699, 25310)/100)
+            gep_100.set_f_vru(random.randint(4960, 5040) / 100)
             time.sleep(.3)
     except:
         pass
@@ -325,14 +395,14 @@ def gep_100_get():
 def gep_110_get():
     try:
         while True:
-            gep_110.set_ua_gep(random.randint(20600, 25400)/100)
-            gep_110.set_ub_gep(random.randint(20600, 25400)/100)
-            gep_110.set_uc_gep(random.randint(20600, 25400)/100)
-            gep_110.set_f_gep(random.randint(496, 504) / 10)
-            gep_110.set_ua_vru(random.randint(20600, 25400)/100)
-            gep_110.set_ub_vru(random.randint(20600, 25400)/100)
-            gep_110.set_uc_vru(random.randint(20600, 25400)/100)
-            gep_110.set_f_vru(random.randint(496, 504) / 10)
+            gep_110.set_ua_gep(random.randint(20699, 25310)/100)
+            gep_110.set_ub_gep(random.randint(20699, 25310)/100)
+            gep_110.set_uc_gep(random.randint(20699, 25310)/100)
+            gep_110.set_f_gep(random.randint(4960, 5040)/100)
+            gep_110.set_ua_vru(random.randint(20699, 25310)/100)
+            gep_110.set_ub_vru(random.randint(20699, 25310)/100)
+            gep_110.set_uc_vru(random.randint(20699, 25310)/100)
+            gep_110.set_f_vru(random.randint(4960, 5040) / 100)
             time.sleep(.3)
     except:
         pass
@@ -345,10 +415,10 @@ def gep_33_get():
             gep_33.set_ub_gep(0)
             gep_33.set_uc_gep(0)
             gep_33.set_f_gep(0)
-            gep_33.set_ua_vru(random.randint(20600, 25400)/100)
-            gep_33.set_ub_vru(random.randint(20600, 25400)/100)
-            gep_33.set_uc_vru(random.randint(20600, 25400)/100)
-            gep_33.set_f_vru(random.randint(496, 504) / 10)
+            gep_33.set_ua_vru(random.randint(20699, 25310)/100)
+            gep_33.set_ub_vru(random.randint(20699, 25310)/100)
+            gep_33.set_uc_vru(random.randint(20699, 25310)/100)
+            gep_33.set_f_vru(random.randint(4960, 5040) / 100)
             time.sleep(.3)
     except:
         pass
@@ -376,10 +446,14 @@ else:
                      fg = 'spring green', relief=RIDGE, borderwidth=2)
     lb_clock.place(x=5, y=5)
 
+    #создаем журнал
+    event_alarm = Event(5, 830)
+    event_alarm.create()
+
     # рисуем индикатор аларма
     image_alarm_0 = PhotoImage(file='image/green_light.png')
     image_alarm_1 = PhotoImage(file='image/red_light.png')
-    lb_alarm = Label(frame_button)
+    lb_alarm = Label(frame_button, image = image_alarm_0)
     lb_alarm.place(x=5, y=500)
 
     # загружаем картинку GEP
