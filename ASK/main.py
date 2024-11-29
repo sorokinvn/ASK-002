@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import pygame
 import random
 import datetime
 import time
@@ -57,12 +58,17 @@ class Gep():
         self.u_max = 253
         self.f_min = 49.6
         self.f_max = 50.4
-        # флаги алармов
+        # флаги алармов ДЭС
         self.service = False
-        self.alarm_ua = False
-        self.alarm_ub = False
-        self.alarm_uc = False
-        self.alarm_f = False
+        self.gep_alarm_ua = False
+        self.gep_alarm_ub = False
+        self.gep_alarm_uc = False
+        self.gep_alarm_f = False
+        # флаги алармов ВРУ
+        self.vru_alarm_ua = False
+        self.vru_alarm_ub = False
+        self.vru_alarm_uc = False
+        self.vru_alarm_f = False
 
     def creat(self):
         def service_1():
@@ -211,26 +217,27 @@ class Gep():
 
     # задаем значение ua gep
     def set_ua_gep(self, value):
-        self.alarm_ua = False
+        self.gep_alarm_ua = False
         self.value = value
         self.lb_ua_gep_value.config(text=self.value)
         if self.service == False:
             if self.value <= self.u_min or self.value >= self.u_max:
                 if self.value == 0:
                     self.lb_ua_gep_value.config(bg=root.cget('bg'))
-                    self.alarm_ua = False
+                    self.gep_alarm_ua = False
                 else:
                     self.lb_ua_gep_value.config(bg='red')
-                    self.alarm_ua = True
+                    self.gep_alarm_ua = True
+                    ch_alarm_var.set(True)
             else:
                 self.lb_ua_gep_value.config(bg='spring green')
-                self.alarm_ua = False
+                self.gep_alarm_ua = False
         else:
             self.lb_ua_gep_value.config(bg=root.cget('bg'))
-            self.alarm_ua = False
+            self.gep_alarm_ua = False
         # добавляем запись об аварии в журнал
-        if self.alarm_ua == True:
-            event_alarm.add([self.name , 'Выход Ua за границы уставок: Ua = ' + str(self.value)], 'alarm')
+        if self.gep_alarm_ua == True:
+            event_alarm.add([self.name , 'Выход за границы уставок: Ua = ' + str(self.value)], 'alarm')
 
     # задаем значение ub gep
     def set_ub_gep(self, value):
@@ -240,19 +247,20 @@ class Gep():
             if self.value <= self.u_min or self.value >= self.u_max:
                 if self.value == 0:
                     self.lb_ub_gep_value.config(bg=root.cget('bg'))
-                    self.alarm_ub = False
+                    self.gep_alarm_ub = False
                 else:
                     self.lb_ub_gep_value.config(bg='red')
-                    self.alarm_ub = True
+                    self.gep_alarm_ub = True
+                    ch_alarm_var.set(True)
             else:
                 self.lb_ub_gep_value.config(bg='spring green')
-                self.alarm_ub = False
+                self.gep_alarm_ub = False
         else:
             self.lb_ub_gep_value.config(bg=root.cget('bg'))
-            self.alarm_ub = False
+            self.gep_alarm_ub = False
         # добавляем запись об аварии в журнал
-        if self.alarm_ub == True:
-            event_alarm.add([self.name , 'Выход Ua за границы уставок: Ub = ' + str(self.value)], 'alarm')
+        if self.gep_alarm_ub == True:
+            event_alarm.add([self.name , 'Выход за границы уставок: Ub = ' + str(self.value)], 'alarm')
 
     # задаем значение uc gep
     def set_uc_gep(self, value):
@@ -262,19 +270,20 @@ class Gep():
             if self.value <= self.u_min or self.value >= self.u_max:
                 if self.value == 0:
                     self.lb_uc_gep_value.config(bg=root.cget('bg'))
-                    self.alarm_uc = False
+                    self.gep_alarm_uc = False
                 else:
                     self.lb_uc_gep_value.config(bg='red')
-                    self.alarm_uc = True
+                    self.gep_alarm_uc = True
+                    ch_alarm_var.set(True)
             else:
                 self.lb_uc_gep_value.config(bg='spring green')
-                self.alarm_uc = False
+                self.gep_alarm_uc = False
         else:
             self.lb_uc_gep_value.config(bg=root.cget('bg'))
-            self.alarm_uc = False
+            self.gep_alarm_uc = False
         # добавляем запись об аварии в журнал
-        if self.alarm_uc == True:
-            event_alarm.add([self.name , 'Выход Ua за границы уставок: Uc = ' + str(self.value)], 'alarm')
+        if self.gep_alarm_uc == True:
+            event_alarm.add([self.name , 'Выход за границы уставок: Uc = ' + str(self.value)], 'alarm')
 
     # задаем значение f gep
     def set_f_gep(self, value):
@@ -284,19 +293,20 @@ class Gep():
             if self.value <= self.f_min or self.value >= self.f_max:
                 if self.value == 0:
                     self.lb_f_gep_value.config(bg=root.cget('bg'))
-                    self.alarm_f = False
+                    self.gep_alarm_f = False
                 else:
                     self.lb_f_gep_value.config(bg='red')
-                    self.alarm_f = True
+                    self.gep_alarm_f = True
+                    ch_alarm_var.set(True)
             else:
                 self.lb_f_gep_value.config(bg='spring green')
-                self.alarm_f = False
+                self.gep_alarm_f = False
         else:
             self.lb_f_gep_value.config(bg=root.cget('bg'))
-            self.alarm_f = False
+            self.gep_alarm_f = False
         # добавляем запись об аварии в журнал
-        if self.alarm_f == True:
-            event_alarm.add([self.name , 'Выход Ua за границы уставок: f = ' + str(self.value)], 'alarm')
+        if self.gep_alarm_f == True:
+            event_alarm.add([self.name , 'Выход за границы уставок: f = ' + str(self.value)], 'alarm')
 
     # задаем положение ati
     def set_sw_pos(self, value):
@@ -341,24 +351,30 @@ class Gep():
         self.lb_ub_vru_value.config(text=self.value)
         if self.value <= self.u_min or self.value >= self.u_max:
             self.lb_ub_vru_value.config(bg='red')
+            self.vru_alarm_ub = True
         else:
             self.lb_ub_vru_value.config(bg='spring green')
+            self.vru_alarm_ub = False
 
     def set_uc_vru(self, value):
         self.value = value
         self.lb_uc_vru_value.config(text=self.value)
         if self.value <= self.u_min or self.value >= self.u_max:
             self.lb_uc_vru_value.config(bg='red')
+            self.vru_alarm_uc = True
         else:
             self.lb_uc_vru_value.config(bg='spring green')
+            self.vru_alarm_uc = False
 
     def set_f_vru(self, value):
         self.value = value
         self.lb_f_vru_value.config(text=self.value)
         if self.value <= self.f_min or self.value >= self.f_max:
             self.lb_f_vru_value.config(bg='red')
+            self.vru_alarm_f = True
         else:
             self.lb_f_vru_value.config(bg='spring green')
+            self.vru_alarm_f = False
 
 def potok (my_func):
     def wapper(*args, **kwargs):
@@ -423,9 +439,27 @@ def gep_33_get():
     except:
         pass
 
+@potok
+def ch_alarm_get():
+    global ch_alarm_var
+    try:
+        while True:
+            if ch_alarm_var.get() == 0:
+                lb_alarm.config(image = image_alarm_green)
+                pygame.mixer.music.stop()
+            if ch_alarm_var.get() ==1:
+                lb_alarm.config(image=image_alarm_red)
+                pygame.mixer.music.play(-1)
+            time.sleep(.3)
+    except:
+        pass
+
 # создаем главное окно программы
 root = tk.Tk()
 root.attributes('-fullscreen', True)
+
+global ch_alarm_var
+ch_alarm_var = BooleanVar()
 
 # порверяем текущее разрешение экрана, если не 1920 х 1080 - не запускаемся
 if root.winfo_screenwidth() != 1920 or root.winfo_screenheight() != 1080:
@@ -451,10 +485,20 @@ else:
     event_alarm.create()
 
     # рисуем индикатор аларма
-    image_alarm_0 = PhotoImage(file='image/green_light.png')
-    image_alarm_1 = PhotoImage(file='image/red_light.png')
-    lb_alarm = Label(frame_button, image = image_alarm_0)
-    lb_alarm.place(x=5, y=500)
+    image_alarm_green = PhotoImage(file='image/green_light.png')
+    image_alarm_green = image_alarm_green.subsample(3, 3)
+    image_alarm_red = PhotoImage(file='image/red_light.png')
+    image_alarm_red = image_alarm_red.subsample(3, 3)
+    lb_alarm = Label(frame_button, image = image_alarm_green)
+    lb_alarm.place(x=5, y=1000)
+    # рисуем чекбаттон аларма
+    ch_alarm = Checkbutton(frame_button, font="Arial 10 bold", text='Звук', variable=ch_alarm_var, onvalue=1, offvalue=0,
+                           relief=RIDGE, borderwidth=2, width=10)
+    ch_alarm.place(x=70, y=1010)
+
+    #загружаем звук аларма
+    pygame.mixer.init()
+    sound_alarm = pygame.mixer.music.load('sound/alarm.wav')
 
     # загружаем картинку GEP
     image_gep = PhotoImage(file = 'image/gep.png')
@@ -481,5 +525,6 @@ else:
     gep_33.set_sw_pos(2)
     gep_33_get()
 
+    ch_alarm_get()
     gtime()
 root.mainloop()
