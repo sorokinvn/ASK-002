@@ -228,7 +228,6 @@ class Gep():
                 else:
                     self.lb_ua_gep_value.config(bg='red')
                     self.gep_alarm_ua = True
-                    ch_alarm_var.set(True)
             else:
                 self.lb_ua_gep_value.config(bg='spring green')
                 self.gep_alarm_ua = False
@@ -237,7 +236,8 @@ class Gep():
             self.gep_alarm_ua = False
         # добавляем запись об аварии в журнал
         if self.gep_alarm_ua == True:
-            event_alarm.add([self.name , 'Выход за границы уставок: Ua = ' + str(self.value)], 'alarm')
+            event_alarm.add([self.name , 'Выход за границы уставок: ДЭС Ua, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
 
     # задаем значение ub gep
     def set_ub_gep(self, value):
@@ -251,7 +251,6 @@ class Gep():
                 else:
                     self.lb_ub_gep_value.config(bg='red')
                     self.gep_alarm_ub = True
-                    ch_alarm_var.set(True)
             else:
                 self.lb_ub_gep_value.config(bg='spring green')
                 self.gep_alarm_ub = False
@@ -260,7 +259,8 @@ class Gep():
             self.gep_alarm_ub = False
         # добавляем запись об аварии в журнал
         if self.gep_alarm_ub == True:
-            event_alarm.add([self.name , 'Выход за границы уставок: Ub = ' + str(self.value)], 'alarm')
+            event_alarm.add([self.name , 'Выход за границы уставок: ДЭС Ub, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
 
     # задаем значение uc gep
     def set_uc_gep(self, value):
@@ -274,7 +274,6 @@ class Gep():
                 else:
                     self.lb_uc_gep_value.config(bg='red')
                     self.gep_alarm_uc = True
-                    ch_alarm_var.set(True)
             else:
                 self.lb_uc_gep_value.config(bg='spring green')
                 self.gep_alarm_uc = False
@@ -283,7 +282,8 @@ class Gep():
             self.gep_alarm_uc = False
         # добавляем запись об аварии в журнал
         if self.gep_alarm_uc == True:
-            event_alarm.add([self.name , 'Выход за границы уставок: Uc = ' + str(self.value)], 'alarm')
+            event_alarm.add([self.name , 'Выход за границы уставок: ДЭС Uc, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
 
     # задаем значение f gep
     def set_f_gep(self, value):
@@ -297,7 +297,6 @@ class Gep():
                 else:
                     self.lb_f_gep_value.config(bg='red')
                     self.gep_alarm_f = True
-                    ch_alarm_var.set(True)
             else:
                 self.lb_f_gep_value.config(bg='spring green')
                 self.gep_alarm_f = False
@@ -306,7 +305,8 @@ class Gep():
             self.gep_alarm_f = False
         # добавляем запись об аварии в журнал
         if self.gep_alarm_f == True:
-            event_alarm.add([self.name , 'Выход за границы уставок: f = ' + str(self.value)], 'alarm')
+            event_alarm.add([self.name , 'Выход за границы уставок: ДЭС f, Гц = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
 
     # задаем положение ati
     def set_sw_pos(self, value):
@@ -341,40 +341,76 @@ class Gep():
     def set_ua_vru(self, value):
         self.value = value
         self.lb_ua_vru_value.config(text=self.value)
-        if self.value <= self.u_min or self.value >= self.u_max:
-            self.lb_ua_vru_value.config(bg='red')
+        if self.service == False:
+            if self.value <= self.u_min or self.value >= self.u_max:
+                self.lb_ua_vru_value.config(bg='red')
+                self.vru_alarm_ua = True
+            else:
+                self.lb_ua_vru_value.config(bg='spring green')
+                self.vru_alarm_ua = False
         else:
-            self.lb_ua_vru_value.config(bg='spring green')
+            self.lb_ua_vru_value.config(bg=root.cget('bg'))
+            self.vru_alarm_ua = False
+        # добавляем запись об аварии в журнал
+        if self.vru_alarm_ua == True:
+            event_alarm.add([self.name, 'Выход за границы уставок: ВРУ Ua, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
+
 
     def set_ub_vru(self, value):
         self.value = value
         self.lb_ub_vru_value.config(text=self.value)
-        if self.value <= self.u_min or self.value >= self.u_max:
-            self.lb_ub_vru_value.config(bg='red')
-            self.vru_alarm_ub = True
+        if self.service == False:
+            if self.value <= self.u_min or self.value >= self.u_max:
+                self.lb_ub_vru_value.config(bg='red')
+                self.vru_alarm_ub = True
+            else:
+                self.lb_ub_vru_value.config(bg='spring green')
+                self.vru_alarm_ub = False
         else:
-            self.lb_ub_vru_value.config(bg='spring green')
+            self.lb_ub_vru_value.config(bg=root.cget('bg'))
             self.vru_alarm_ub = False
+        # добавляем запись об аварии в журнал
+        if self.vru_alarm_ub == True:
+            event_alarm.add([self.name, 'Выход за границы уставок: ВРУ Ub, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
+
 
     def set_uc_vru(self, value):
         self.value = value
         self.lb_uc_vru_value.config(text=self.value)
-        if self.value <= self.u_min or self.value >= self.u_max:
-            self.lb_uc_vru_value.config(bg='red')
-            self.vru_alarm_uc = True
+        if self.service == False:
+            if self.value <= self.u_min or self.value >= self.u_max:
+                self.lb_uc_vru_value.config(bg='red')
+                self.vru_alarm_uc = True
+            else:
+                self.lb_uc_vru_value.config(bg='spring green')
+                self.vru_alarm_uc = False
         else:
-            self.lb_uc_vru_value.config(bg='spring green')
+            self.lb_uc_vru_value.config(bg=root.cget('bg'))
             self.vru_alarm_uc = False
+        # добавляем запись об аварии в журнал
+        if self.vru_alarm_uc == True:
+            event_alarm.add([self.name, 'Выход за границы уставок: ВРУ Uc, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
 
     def set_f_vru(self, value):
         self.value = value
         self.lb_f_vru_value.config(text=self.value)
-        if self.value <= self.f_min or self.value >= self.f_max:
-            self.lb_f_vru_value.config(bg='red')
-            self.vru_alarm_f = True
+        if self.service == False:
+            if self.value <= self.f_min or self.value >= self.f_max:
+                self.lb_f_vru_value.config(bg='red')
+                self.vru_alarm_f = True
+            else:
+                self.lb_f_vru_value.config(bg='spring green')
+                self.vru_alarm_f = False
+        # добавляем запись об аварии в журнал
         else:
-            self.lb_f_vru_value.config(bg='spring green')
+            self.lb_f_vru_value.config(bg=root.cget('bg'))
             self.vru_alarm_f = False
+        if self.vru_alarm_f == True:
+            event_alarm.add([self.name, 'Выход за границы уставок: ВРУ f, Гц = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
 
 def potok (my_func):
     def wapper(*args, **kwargs):
