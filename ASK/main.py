@@ -46,6 +46,194 @@ class Event():
         value = [datetime.date.today(), datetime.datetime.now().time().strftime('%H:%M:%S'), event[0], event[1]]
         self.tree.insert("", END, values = value, tags = (tag))
 
+
+# объявляем класс UPS
+class Ups():
+    def __init__(self, name, x, y):
+        self.name = name
+        # координаты размещения виджета
+        self.x = x
+        self.y = y
+        # уставки допустимых значений контролируемых параметров (по ГОСТ 32144-2013: 10% для напряжения и 0,4Гц для частоты сети)
+        self.u_min = 207
+        self.u_max = 253
+        self.f_min = 49.6
+        self.f_max = 50.4
+        # флаги алармов UPS
+        self.service = False
+        self.gep_alarm_ua = False
+        self.gep_alarm_ub = False
+        self.gep_alarm_uc = False
+        self.gep_alarm_f = False
+
+
+    def creat(self):
+
+        # создаем фрейм ups
+        self.frame_ups = Frame(frame_root, width=400, height=200, relief=GROOVE, borderwidth=2)
+        self.frame_ups.place(x=self.x, y=self.y)
+
+        # рисуем картинку ups
+        lb_image_ups = Label(self.frame_ups, image=image_ups, bg='green', relief=RIDGE, borderwidth=3)
+        lb_image_ups.place(x=5, y=5)
+
+        # рисуем имя ups
+        lb_name_ups = Label(self.frame_ups, width=7, text=self.name, font="Arial 12 bold", bg='orange',
+                            relief=RIDGE, borderwidth=2)
+        lb_name_ups.place(x=14, y=153)
+
+        # рисуем поля параметров ups
+        lb_ups = Label(self.frame_ups, text='СТАТУС', width=20, font="Arial 8 bold", relief=RIDGE, borderwidth=2)
+        lb_ups.place(x=240, y=5)
+
+        # рисуем поле статуса работа от АКБ ups
+        self.lb_status_akb_work_ups = Label(self.frame_ups, text='Работа от АКБ', width=20, font="Arial 8 bold",
+                                       relief=RIDGE, borderwidth=2)
+        self.lb_status_akb_work_ups.place(x=240, y=27)
+
+        # рисуем поле статуса перегрев ups
+        self.lb_status_temp_ups = Label(self.frame_ups, text='Перегрев', width=20, font="Arial 8 bold",
+                                        relief=RIDGE, borderwidth=2)
+        self.lb_status_temp_ups.place(x=240, y=49)
+
+        # рисуем поле статуса неисправность АКБ ups
+        self.lb_status_akb_alarm_ups = Label(self.frame_ups, text='Неисправность АКБ', width=20, font="Arial 8 bold",
+                                        relief=RIDGE, borderwidth=2)
+        self.lb_status_akb_alarm_ups.place(x=240, y=71)
+
+        # рисуем поле статуса перегруз ups
+        self.lb_status_power_ups = Label(self.frame_ups, text='Перегруз', width=20, font="Arial 8 bold",
+                                        relief=RIDGE, borderwidth=2)
+        self.lb_status_power_ups.place(x=240, y=93)
+
+        # рисуем поля параметров ups
+        lb_ups = Label(self.frame_ups, text='ВЫХОД', width=12, font="Arial 8 bold", relief=RIDGE, borderwidth=2)
+        lb_ups.place(x=100, y=5)
+
+        lb_ua_ups = Label(self.frame_ups, text='Ua, В', width=5, font="Arial 8 bold", bg='orange',
+                          relief=RIDGE, borderwidth=2)
+        lb_ua_ups.place(x=100, y=27)
+
+        self.lb_ua_ups_value = Label(self.frame_ups, width=5, font="Arial 8 bold", relief=RIDGE, borderwidth=2)
+        self.lb_ua_ups_value.place(x=149, y=27)
+
+        lb_ub_ups = Label(self.frame_ups, text='Ub, В', width=5, font="Arial 8 bold",
+                          bg='orange', relief=RIDGE, borderwidth=2)
+        lb_ub_ups.place(x=100, y=49)
+
+        self.lb_ub_ups_value = Label(self.frame_ups, width=5, font="Arial 8 bold", relief=RIDGE, borderwidth=2)
+        self.lb_ub_ups_value.place(x=149, y=49)
+
+        lb_uc_ups= Label(self.frame_ups, text='Uc, В', width=5, font="Arial 8 bold",
+                         bg='orange', relief=RIDGE, borderwidth=2)
+        lb_uc_ups.place(x=100, y=71)
+
+        self.lb_uc_ups_value = Label(self.frame_ups, width=5, font="Arial 8 bold", relief=RIDGE, borderwidth=2)
+        self.lb_uc_ups_value.place(x=149, y=71)
+
+        lb_f_ups = Label(self.frame_ups, text='F, Гц', width=5, font="Arial 8 bold",
+                         bg='orange', relief=RIDGE, borderwidth=2)
+        lb_f_ups.place(x=100, y=93)
+
+        self.lb_f_ups_value = Label(self.frame_ups, width=5, font="Arial 8 bold", relief=RIDGE, borderwidth=2)
+        self.lb_f_ups_value.place(x=149, y=93)
+
+    # задаем статус работа от АКБ ups
+    def set_akb_work_ups(self, value):
+        self.ups_alarm_akb_work = False
+        self.value = value
+        if self.value == 0:
+            self.lb_status_akb_alarm_ups.config(bg=root.cget('bg'))
+            self.ups_alarm_akb_work = False
+        if self.value == 1:
+            self.lb_status_akb_alarm_ups.config(bg='red')
+            self.ups_alarm_akb_work = True
+        # добавляем запись об аварии в журнал
+        if self.ups_alarm_akb_work == True:
+            event_alarm.add([self.name , 'Авария UPS: Работа от АКБ'], 'alarm')
+            ch_alarm_var.set(True)
+
+    # задаем значение ua ups
+    def set_ua_ups(self, value):
+        self.ups_alarm_ua = False
+        self.value = value
+        self.lb_ua_ups_value.config(text=self.value)
+        if self.value <= self.u_min or self.value >= self.u_max:
+            if self.value == 0:
+                self.lb_ua_ups_value.config(bg=root.cget('bg'))
+                self.ups_alarm_ua = False
+            else:
+                self.lb_ua_ups_value.config(bg='red')
+                self.ups_alarm_ua = True
+        else:
+                self.lb_ua_ups_value.config(bg='spring green')
+                self.ups_alarm_ua = False
+        # добавляем запись об аварии в журнал
+        if self.ups_alarm_ua == True:
+            event_alarm.add([self.name , 'Выход за границы уставок: UPS Ua, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
+
+    # задаем значение ub ups
+    def set_ub_ups(self, value):
+        self.ups_alarm_ub = False
+        self.value = value
+        self.lb_ub_ups_value.config(text=self.value)
+        if self.value <= self.u_min or self.value >= self.u_max:
+            if self.value == 0:
+                self.lb_ub_ups_value.config(bg=root.cget('bg'))
+                self.ups_alarm_ub = False
+            else:
+                self.lb_ub_ups_value.config(bg='red')
+                self.ups_alarm_ub = True
+        else:
+                self.lb_ub_ups_value.config(bg='spring green')
+                self.ups_alarm_ub = False
+        # добавляем запись об аварии в журнал
+        if self.ups_alarm_ub == True:
+            event_alarm.add([self.name , 'Выход за границы уставок: UPS Ub, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
+
+    # задаем значение uc ups
+    def set_uc_ups(self, value):
+        self.ups_alarm_uc = False
+        self.value = value
+        self.lb_uc_ups_value.config(text=self.value)
+        if self.value <= self.u_min or self.value >= self.u_max:
+            if self.value == 0:
+                self.lb_uc_ups_value.config(bg=root.cget('bg'))
+                self.ups_alarm_uc = False
+            else:
+                self.lb_uc_ups_value.config(bg='red')
+                self.ups_alarm_uc = True
+        else:
+                self.lb_uc_ups_value.config(bg='spring green')
+                self.ups_alarm_uc = False
+        # добавляем запись об аварии в журнал
+        if self.ups_alarm_uc == True:
+            event_alarm.add([self.name , 'Выход за границы уставок: UPS Uc, В = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
+
+    # задаем значение uc ups
+    def set_f_ups(self, value):
+        self.ups_alarm_f = False
+        self.value = value
+        self.lb_f_ups_value.config(text=self.value)
+        if self.value <= self.f_min or self.value >= self.f_max:
+            if self.value == 0:
+                self.lb_f_ups_value.config(bg=root.cget('bg'))
+                self.ups_alarm_f = False
+            else:
+                self.lb_f_ups_value.config(bg='red')
+                self.ups_alarm_f = True
+        else:
+                self.lb_f_ups_value.config(bg='spring green')
+                self.ups_alarm_f = False
+        # добавляем запись об аварии в журнал
+        if self.ups_alarm_f == True:
+            event_alarm.add([self.name , 'Выход за границы уставок: UPS f, Гц = ' + str(self.value)], 'alarm')
+            ch_alarm_var.set(True)
+
+
 # объявляем класс GEP
 class Gep():
     def __init__(self, name, x, y):
@@ -474,6 +662,17 @@ def gep_33_get():
             time.sleep(.3)
     except:
         pass
+@potok
+def ups_1_get():
+    try:
+        while True:
+            ups_1.set_ua_ups(random.randint(20699, 25310)/100)
+            ups_1.set_ub_ups(random.randint(20699, 25310) / 100)
+            ups_1.set_uc_ups(random.randint(20699, 25310) / 100)
+            ups_1.set_f_ups(random.randint(4960, 5040) / 100)
+            time.sleep(.3)
+    except:
+        pass
 
 @potok
 def ch_alarm_get():
@@ -539,12 +738,26 @@ else:
     # загружаем картинку GEP
     image_gep = PhotoImage(file = 'image/gep.png')
 
-    gep_100 = Gep(name = 'GEP 100', x = 5, y = 5)
+    # загружаем картинку UPS
+    image_ups = PhotoImage(file='image/ups.png')
+    image_ups = image_ups.subsample(2, 2)
+
+    gep_100 = Gep(name = 'GEP 1', x = 5, y = 5)
     gep_100.creat()
-    gep_110 = Gep(name = 'GEP 110', x=5, y=220)
+    gep_110 = Gep(name = 'GEP 2', x=5, y=220)
     gep_110.creat()
-    gep_33 = Gep(name = 'GEP 33', x=5, y=435)
+    gep_33 = Gep(name = 'GEP 3', x=5, y=435)
     gep_33.creat()
+
+    ups_1 = Ups(name='UPS 1', x=600, y=5)
+    ups_1.creat()
+
+    ups_2 = Ups(name='UPS 2', x=600, y=220)
+    ups_2.creat()
+
+    ups_3 = Ups(name='UPS 3', x=600, y=435)
+    ups_3.creat()
+
 
     gep_100.set_status(1)
     gep_100.set_key_pos(16, 100)
@@ -560,6 +773,9 @@ else:
     gep_33.set_key_pos(64, 33)
     gep_33.set_sw_pos(2)
     gep_33_get()
+
+    ups_1.set_akb_work_ups(1)
+    ups_1_get()
 
     ch_alarm_get()
     gtime()
